@@ -63,3 +63,27 @@ stages:
     steps:
         - script: echo "Running unit tests..."
           displayName: 'Run dummy tests'
+
+- stage: 'Deploy'
+  displayName: 'Deploy to the staging environment'
+  dependsOn: Test
+  jobs:
+  - deployment: Deploy
+    pool:
+      vmImage: 'ubuntu-22.04'
+    environment: deployment
+    variables:
+    - group: 'Release'
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - download: current
+            artifact: drop
+          - task: AzureWebApp@1
+            displayName: 'Azure App Service Deploy: deploying website'
+            inputs:
+              azureSubscription: 'SecureApp-AzureConnection'
+              appType: 'webAppLinux'
+              appName: '$(WebAppNameDeploy)'
+              package: '$(Pipeline.Workspace)/drop/$(buildConfiguration)/*.zip'
