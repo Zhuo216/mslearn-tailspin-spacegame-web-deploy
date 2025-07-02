@@ -51,3 +51,15 @@ stages:
 
     - publish: '$(Build.ArtifactStagingDirectory)'
       artifact: drop
+
+- stage: 'Test'
+  displayName: 'Test to the application'
+  dependsOn: Build
+  condition:  succeeded()
+  jobs:
+  - job: TestJob
+    pool:
+      name: SecureAgents
+    steps:
+        - script: echo "Running unit tests..."
+          displayName: 'Run dummy tests'
